@@ -35,7 +35,59 @@ const state = {
   busy: null,
   feed: [],
   modal: null,
+  filter: "all",
+  height: 0n,
+  totalStake: 0n,
+  updatedAt: null,
 };
+
+const HELP_KEY = "validator-league-help-seen-v1";
+
+// Deterministic badge colour per validator, from the warm palette.
+const BADGE = ["#ff6a2b", "#f2c14e", "#8fd694", "#ff7a6b", "#e8d5b0", "#d9a066", "#b8c97a", "#f0a77a"];
+function avatar(id, size = "") {
+  let h = 0;
+  for (const ch of id) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  const label = id.replace(/^(validator|node)/, "").replace(/[^a-z0-9]/gi, "").slice(0, 2) || id.slice(0, 2);
+  return `<span class="av ${size}" style="background:${BADGE[h % BADGE.length]}">${esc(label)}</span>`;
+}
+
+// Small confetti burst for wins and milestones (no library).
+function confetti() {
+  const canvas = document.getElementById("confetti");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  canvas.width = innerWidth;
+  canvas.height = innerHeight;
+  const colors = ["#ff6a2b", "#f2c14e", "#8fd694", "#efe6d2", "#ff7a6b"];
+  const parts = Array.from({ length: 140 }, () => ({
+    x: innerWidth / 2 + (Math.random() - 0.5) * 200,
+    y: innerHeight * 0.35,
+    vx: (Math.random() - 0.5) * 14,
+    vy: -Math.random() * 12 - 4,
+    r: Math.random() * 6 + 3,
+    c: colors[Math.floor(Math.random() * colors.length)],
+    a: Math.random() * Math.PI,
+  }));
+  let frame = 0;
+  (function step() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (const p of parts) {
+      p.vy += 0.35;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.a += 0.15;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.a);
+      ctx.fillStyle = p.c;
+      ctx.fillRect(-p.r / 2, -p.r / 4, p.r, p.r / 2);
+      ctx.restore();
+    }
+    if (++frame < 110) requestAnimationFrame(step);
+    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+  })();
+}
 
 // ---------- helpers ----------
 const $ = (sel) => document.querySelector(sel);
@@ -152,6 +204,9 @@ async function loadLeague() {
   // Matchday countdown from the epoch start block.
   const start = BigInt(vals.epoch_start_height);
   const height = BigInt(latest.header.height);
+  state.height = height;
+  state.totalStake = curTotal;
+  state.updatedAt = new Date();
   state.blocksLeft = start + EPOCH_LENGTH - height;
   try {
     const startBlock = await rpc("block", { block_id: Number(start) });
@@ -317,7 +372,8 @@ async function doClaim() {
   const r = await act("claim", "claim", {}, "0.01");
   if (!r) return;
   pushFeed(`Collected the <b>1,000 LEAGUE</b> starter pack`, r.hash);
-  toast(`Starter pack collected: 1,000 LEAGUE.${txLink(r.hash)}`, "ok");
+  toast(`Starter pack collected: 1,000 LEAGUE. Now pick a validator in the table.${txLink(r.hash)}`, "ok");
+  confetti();
   render();
 }
 
@@ -327,7 +383,8 @@ async function doBack(validatorId, amount) {
   state.modal = null;
   renderModal();
   pushFeed(`Backed <b>${esc(validatorId)}</b> with <b>${fmtTok(amount)}</b> LEAGUE`, r.hash);
-  toast(`You now back <b>${esc(shortId(validatorId))}</b>.${txLink(r.hash)}`, "ok");
+  toast(`You now back <b>${esc(shortId(validatorId))}</b>. Your result lands at the next whistle.${txLink(r.hash)}`, "ok");
+  confetti();
   render();
 }
 
@@ -343,6 +400,7 @@ async function doUnback() {
     r.hash,
   );
   toast(`Cashed out ${fmtTok(value)} LEAGUE.${txLink(r.hash)}`, "ok");
+  if (diff > 0n) confetti();
   render();
 }
 
@@ -391,22 +449,41 @@ function formChips(rec) {
   return `<div class="form">${chips.join("")}</div>`;
 }
 
+function renderTabs() {
+  const count = (p) => state.validators.filter((v) => v.projection === p).length;
+  const tabs = [
+    ["all", "All", state.validators.length],
+    ["up", "Rising", count("up")],
+    ["down", "Slipping", count("down")],
+    ["out", "Leaving", count("out")],
+    ["backed", "In play", state.board.size],
+  ];
+  return `<div class="tabs">${tabs
+    .map(([k, label, n]) => `<button class="tab ${state.filter === k ? "on" : ""}" data-action="filter" data-f="${k}">${label}<span class="n">${n}</span></button>`)
+    .join("")}</div>`;
+}
+
 function renderTable() {
   const maxShare = Math.max(...state.validators.map((v) => v.share), 0.0001);
   const mine = state.position?.validator_id;
-  const rows = state.validators
-    .map((v, i) => {
+  const ranked = state.validators.map((v, i) => ({ v, rank: i + 1 }));
+  const shown = ranked.filter(({ v }) =>
+    state.filter === "all" ? true : state.filter === "backed" ? state.board.has(v.id) : v.projection === state.filter,
+  );
+  const rows = shown
+    .map(({ v, rank }) => {
       const rec = state.board.get(v.id);
       const pending = pendingResult(v, rec);
       const inLeague = rec ? fmtTok(recordValue(rec), 0) : "-";
       const canBack = state.player && !state.position && state.league > 0n && !v.inactive;
+      const why = !state.player ? "Press Start playing first" : state.position ? "Cash out your current team first" : state.league === 0n ? "Collect your LEAGUE first" : "";
       const btn =
         mine === v.id
           ? `<span class="tag ready">Your team</span>`
-          : `<button class="btn small" data-action="open-back" data-id="${esc(v.id)}" ${canBack ? "" : "disabled"} title="${state.position ? "Cash out your current team first" : state.player ? "" : "Press Play now first"}">Back</button>`;
-      return `<tr class="${mine === v.id ? "mine" : ""}">
-        <td class="rank">${v.inactive ? "-" : i + 1}</td>
-        <td><div class="vname" title="${esc(v.id)}">${esc(v.id)}</div>${pending ? `<div class="vsub"><span class="tag ready pulse">Result ready: ${esc(pending.toUpperCase())}</span></div>` : ""}</td>
+          : `<button class="btn small ${canBack ? "primary" : ""}" data-action="open-back" data-id="${esc(v.id)}" ${canBack ? "" : "disabled"} title="${why}">Back</button>`;
+      return `<tr class="${mine === v.id ? "mine" : ""} ${canBack ? "clickable" : ""}" ${canBack ? `data-action="open-back" data-id="${esc(v.id)}"` : ""}>
+        <td class="rank">${v.inactive ? "-" : rank}</td>
+        <td><div class="vcell">${avatar(v.id)}<div style="min-width:0"><div class="vname" title="${esc(v.id)}">${esc(v.id)}<a class="ext" href="${EXPLORER_ACCOUNT(v.id)}" target="_blank" rel="noopener" title="Open in explorer">&#8599;</a></div>${pending ? `<div class="vsub"><span class="tag ready pulse">Result ready: ${esc(pending.toUpperCase())}</span></div>` : `<div class="vsub">${v.inactive ? "not in the active set" : fmtTok(v.stake / 1000000n, 0) + " NEAR staked"}</div>`}</div></div></td>
         <td class="share"><span class="num">${v.inactive ? "0.00%" : pct(v.share)}</span><div class="bar"><i style="width:${(v.share / maxShare) * 100}%"></i></div></td>
         <td class="hide-sm">${projectionTag(v.projection)}</td>
         <td class="num hide-sm">${inLeague}</td>
@@ -416,8 +493,52 @@ function renderTable() {
     })
     .join("");
   return `<table class="table">
-    <thead><tr><th>#</th><th>Validator</th><th>Stake share</th><th class="hide-sm">Next matchday</th><th class="hide-sm">LEAGUE backing</th><th class="hide-sm">Record</th><th></th></tr></thead>
-    <tbody>${rows}</tbody></table>`;
+    <thead><tr><th>#</th><th>Validator</th>
+      <th><span class="th-tip" title="This validator's share of all stake right now, read live from NEAR testnet. This is what the contract scores.">Stake share</span></th>
+      <th class="hide-sm"><span class="th-tip" title="NEAR publishes the next epoch's validator set in advance. Rising = its share grows next matchday, Slipping = shrinks, Leaving = drops out (-30% for backers).">Next matchday</span></th>
+      <th class="hide-sm"><span class="th-tip" title="Total LEAGUE currently locked on this validator by all players, at its current value.">LEAGUE backing</span></th>
+      <th class="hide-sm"><span class="th-tip" title="Scored matchdays: green = share rose, coral = fell, red = kicked.">Record</span></th><th></th></tr></thead>
+    <tbody>${rows || `<tr><td colspan="7" class="feed-empty">No validators in this view right now.</td></tr>`}</tbody></table>`;
+}
+
+function questSteps() {
+  const scored = state.position && state.board.get(state.position.validator_id)?.epoch > state.position.entry_epoch;
+  const steps = [
+    ["Join the league", !!state.player],
+    ["Collect 1,000 LEAGUE", state.claimed],
+    ["Back a validator", !!state.position],
+    ["Wait for the whistle", !!scored],
+    ["Cash out (or ride it)", false],
+  ];
+  const nowIdx = steps.findIndex(([, done]) => !done);
+  return `<div class="quest">${steps
+    .map(([label, done], i) => `<div class="q ${done ? "done" : i === nowIdx ? "now" : ""}"><span class="dot">${done ? "&#10003;" : i + 1}</span>${label}</div>`)
+    .join("")}</div>`;
+}
+
+function renderHelp() {
+  const c = state.config;
+  return `<div class="scrim" data-action="close-modal">
+    <div class="modal wide" role="dialog" aria-label="How to play">
+      <h3>How to play Validator League</h3>
+      <div class="sub">Fantasy sports where the players are NEAR's real validators and the blockchain is the referee.</div>
+      <div class="steps">
+        <div class="hstep"><div class="n">01</div><div class="t">Join free</div><div class="d">Press Start playing. We create a free NEAR testnet account in your browser and give you 1,000 LEAGUE. No wallet, no real money.</div></div>
+        <div class="hstep"><div class="n">02</div><div class="t">Pick a team</div><div class="d">Choose a validator in the table and lock some LEAGUE on it. Tip: the Next matchday column shows who is rising or leaving.</div></div>
+        <div class="hstep"><div class="n">03</div><div class="t">The whistle</div><div class="d">Every NEAR epoch (about 12 hours) is a matchday. Anyone presses tick() and the contract reads each validator's stake share from the chain: share up +${c.win_bps / 100}%, down -${c.lose_bps / 100}%, dropped -${c.kick_bps / 100}%.</div></div>
+        <div class="hstep"><div class="n">04</div><div class="t">Cash out</div><div class="d">Unlock whenever you want at the current value. Wins are minted, losses are burned. Ride a hot validator for many matchdays to compound.</div></div>
+      </div>
+      <div class="faq">
+        <b>Is this data real?</b>
+        <p>Yes. The table is the live NEAR testnet validator set read from public RPC, and the block number above updates every 15 seconds. Testnet validators really are named node0, node1, validator4.testnet and so on. Every action you take is a real transaction you can open in the explorer.</p>
+        <b>Where is the wallet?</b>
+        <p>For this testnet version you do not need one: Start playing creates a testnet account whose key stays in this browser. A mainnet version would connect a NEAR wallet instead.</p>
+        <b>Who decides the results?</b>
+        <p>Nobody. The contract asks the NEAR runtime for validator stakes directly. There is no oracle and no admin, and the rules cannot be changed.</p>
+      </div>
+      <div class="modal-actions" style="margin-top:16px"><button class="btn primary" data-action="close-help">${state.player ? "Back to the game" : "Got it, let's play"}</button></div>
+    </div>
+  </div>`;
 }
 
 function renderPlayer() {
@@ -425,7 +546,8 @@ function renderPlayer() {
     return `<div class="panel player">
       <h3>Join the league</h3>
       <p>One click creates a free NEAR testnet account in this browser and collects your 1,000 LEAGUE starter pack. No wallet, no install, no real money.</p>
-      <button class="btn primary block" data-action="create" ${state.busy ? "disabled" : ""}>${state.busy === "create" ? `<span class="spinner"></span> Signing you up...` : "Play now"}</button>
+      ${questSteps()}
+      <button class="btn primary block" data-action="create" ${state.busy ? "disabled" : ""}>${state.busy === "create" ? `<span class="spinner"></span> Signing you up...` : "Start playing - free"}</button>
       <p class="dim" style="margin:10px 0 0;font-size:12px">The key for this testnet account stays in your browser's local storage.</p>
     </div>`;
   }
@@ -466,6 +588,7 @@ function renderPlayer() {
       <div class="stat"><div class="k">LEAGUE</div><div class="v">${fmtTok(state.league, 0)}</div></div>
       <div class="stat"><div class="k">Testnet NEAR</div><div class="v">${fmtNear(state.near)}</div></div>
     </div>
+    ${questSteps()}
     ${ticket}
   </div>`;
 }
@@ -506,17 +629,40 @@ function render() {
   <div class="wrap">
     <header class="top">
       <div class="brand"><div class="wordmark">Validator <span>League</span></div><span class="net">NEAR testnet</span></div>
-      <div class="matchday">
-        <div class="md-block"><div class="md-label">Matchday</div><div class="md-value">${state.epoch}</div></div>
-        <div class="md-block"><div class="md-label">Next whistle</div><div class="md-value accent">~${fmtDuration(state.etaMs)}</div></div>
-        <div class="md-block hide-xs"><div class="md-label">Players</div><div class="md-value">${state.stats.claims}</div></div>
+      <div class="top-right">
+        <div class="matchday">
+          <div class="md-block"><div class="md-label">Matchday</div><div class="md-value">${state.epoch}</div></div>
+          <div class="md-block hide-xs"><div class="md-label">Next whistle</div><div class="md-value accent">~${fmtDuration(state.etaMs)}</div></div>
+        </div>
+        <button class="btn ghost small" data-action="help">How to play</button>
+        ${
+          state.player
+            ? `<span class="chip">${avatar(state.player.accountId)}${fmtTok(state.league, 0)} LEAGUE</span>`
+            : `<button class="btn primary" data-action="create" ${state.busy ? "disabled" : ""}>${state.busy === "create" ? `<span class="spinner"></span>` : "Start playing"}</button>`
+        }
       </div>
     </header>
+
+    <div class="live">
+      <span class="live-dot"><i></i>LIVE</span>
+      <div class="progress" title="Progress of the current NEAR epoch (matchday). When it ends, the next whistle can be blown.">
+        <span class="kv">Matchday ${state.epoch}</span>
+        <div class="track"><div class="fill" style="width:${state.blocksLeft != null ? Math.min(100, Math.max(2, (1 - Number(state.blocksLeft) / Number(EPOCH_LENGTH)) * 100)).toFixed(1) : 0}%"></div></div>
+        <span class="kv"><b>${state.blocksLeft != null ? Math.round((1 - Number(state.blocksLeft) / Number(EPOCH_LENGTH)) * 100) : 0}%</b> played</span>
+      </div>
+      <span class="kv hide-md">block <b>#${Number(state.height).toLocaleString("en-US")}</b></span>
+      <span class="kv hide-md"><b>${state.validators.filter((v) => !v.inactive).length}</b> validators</span>
+      <span class="kv hide-md"><b>${state.stats.claims}</b> players</span>
+    </div>
 
     <section class="hero">
       <div>
         <h1>Back a validator.<br/><em>The chain keeps score.</em></h1>
-        <p>A memecoin where every NEAR epoch is a matchday. Lock LEAGUE on a real validator; when someone blows the whistle, the contract reads that validator's share of all stake straight from the NEAR runtime. No oracle. No admin. No way to fake the result.</p>
+        <p>Fantasy sports on NEAR's real validators. Lock LEAGUE on one; every epoch the contract reads its share of all stake straight from the NEAR runtime. Share up, you win. No oracle, no admin, no way to fake the result.</p>
+        <div class="cta-row">
+          ${state.player ? `<button class="btn primary xl" data-action="scroll-table">Pick your team</button>` : `<button class="btn primary xl" data-action="create" ${state.busy ? "disabled" : ""}>${state.busy === "create" ? `<span class="spinner"></span> Signing you up...` : "Start playing - free"}</button>`}
+          <button class="btn xl" data-action="help">How it works</button>
+        </div>
       </div>
       <div class="rules">
         <div class="rule up"><div class="big">+${c.win_bps / 100}%</div><div class="small">stake share rises</div></div>
@@ -529,10 +675,10 @@ function render() {
     ${state.error ? `<div class="toast err" style="margin-bottom:16px">Live data paused: ${esc(state.error)}</div>` : ""}
 
     <section class="main">
-      <div class="panel">
-        <div class="panel-head">
-          <div class="panel-title">League table</div>
-          <div class="legend"><span>Next matchday = stake share in the published next-epoch validator set</span></div>
+      <div class="panel" id="league-table">
+        <div class="panel-head" style="flex-wrap:wrap;gap:10px">
+          <div><div class="panel-title">League table</div><div class="dim" style="font-size:11px;margin-top:2px">Live from NEAR testnet &middot; updated ${state.updatedAt ? state.updatedAt.toLocaleTimeString() : "-"}</div></div>
+          ${renderTabs()}
         </div>
         ${renderTable()}
       </div>
@@ -561,6 +707,10 @@ function renderModal() {
   const root = $("#modal-root");
   if (!state.modal) {
     root.innerHTML = "";
+    return;
+  }
+  if (state.modal.kind === "help") {
+    root.innerHTML = renderHelp();
     return;
   }
   const { id } = state.modal;
@@ -617,11 +767,38 @@ document.addEventListener("click", async (e) => {
     renderModal();
     return;
   }
+  if (action === "help") {
+    state.modal = { kind: "help" };
+    renderModal();
+    return;
+  }
+  if (action === "close-help") {
+    try {
+      localStorage.setItem(HELP_KEY, "1");
+    } catch {
+      /* ignore */
+    }
+    state.modal = null;
+    renderModal();
+    if (!state.player) createPlayer();
+    return;
+  }
+  if (action === "filter") {
+    state.filter = el.dataset.f;
+    render();
+    return;
+  }
+  if (action === "scroll-table") {
+    document.getElementById("league-table")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    return;
+  }
   if (action === "create") return createPlayer();
   if (action === "claim") return doClaim();
   if (action === "unback") return doUnback();
   if (action === "tick") return doTick();
   if (action === "open-back") {
+    if (e.target.closest("a")) return; // explorer links inside a row
+    if (!state.player || state.position || state.league === 0n) return;
     const half = state.league / 2n;
     state.modal = { id: el.dataset.id, input: fmtTok(half, 0).replace(/,/g, "") };
     renderModal();
@@ -676,10 +853,24 @@ document.addEventListener("keydown", (e) => {
 });
 
 // ---------- boot ----------
-document.body.insertAdjacentHTML("beforeend", `<div id="modal-root"></div><div id="toasts" class="toasts"></div>`);
+document.body.insertAdjacentHTML(
+  "beforeend",
+  `<div id="modal-root"></div><div id="toasts" class="toasts"></div><canvas id="confetti"></canvas>`,
+);
 loadStoredPlayer();
 render();
-refresh();
+refresh().then(() => {
+  let seen = false;
+  try {
+    seen = localStorage.getItem(HELP_KEY) === "1";
+  } catch {
+    /* ignore */
+  }
+  if (!seen && !state.player && state.loaded) {
+    state.modal = { kind: "help" };
+    renderModal();
+  }
+});
 setInterval(() => {
   if (!state.busy) refresh();
 }, REFRESH_MS);
