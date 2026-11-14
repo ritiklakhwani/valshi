@@ -1,0 +1,114 @@
+{
+ "source": "https://test.rpc.fastnear.com validators [null]",
+ "epoch_start_height": 277688455,
+ "validators": [
+  {
+   "account_id": "node0",
+   "stake": "105172947315729911234075889233159"
+  },
+  {
+   "account_id": "node1",
+   "stake": "99610383896336910970563525443482"
+  },
+  {
+   "account_id": "kiln.pool.f863973.m0",
+   "stake": "97171158873132474091464112130159"
+  },
+  {
+   "account_id": "node2",
+   "stake": "94598118648269462355086449776055"
+  },
+  {
+   "account_id": "node3",
+   "stake": "89586238341522064262304049435550"
+  },
+  {
+   "account_id": "aurora.pool.f863973.m0",
+   "stake": "23619104526081349539744837105423"
+  },
+  {
+   "account_id": "01node.pool.f863973.m0",
+   "stake": "20784184418500784862073273138196"
+  },
+  {
+   "account_id": "stakely_v2.pool.f863973.m0",
+   "stake": "13988192050131062800970498607987"
+  },
+  {
+   "account_id": "legends.pool.f863973.m0",
+   "stake": "11780343887065750560972091988710"
+  },
+  {
+   "account_id": "validator4.testnet",
+   "stake": "5011470413095716085242723702053"
+  },
+  {
+   "account_id": "validator5.testnet",
+   "stake": "5011220137343198499378253419095"
+  },
+  {
+   "account_id": "validator6.testnet",
+   "stake": "5011080984128823003257362301630"
+  },
+  {
+   "account_id": "validator7.testnet",
+   "stake": "5010830708382087651635701106163"
+  },
+  {
+   "account_id": "validator8.testnet",
+   "stake": "5010680542943482506285964142080"
+  },
+  {
+   "account_id": "validator9.testnet",
+   "stake": "5010480322350811684614636609075"
+  },
+  {
+   "account_id": "validator10.testnet",
+   "stake": "5010161971779996122804409164195"
+  },
+  {
+   "account_id": "validator11.testnet",
+   "stake": "5009986778761536079541536447687"
+  },
+  {
+   "account_id": "ni.pool.f863973.m0",
+   "stake": "4529182511035230066144207838762"
+  },
+  {
+   "account_id": "ts.pool.f863973.m0",
+   "stake": "4478236707982994561149481528171"
+  },
+  {
+   "account_id": "lunanova2.pool.f863973.m0",
+   "stake": "4451684559611473703826872605986"
+  },
+  {
+   "account_id": "stakesstone.pool.f863973.m0",
+   "stake": "3052010692701826470104907453281"
+  },
+  {
+   "account_id": "pionear-0.pool.f863973.m0",
+   "stake": "2584622054598992321645029287328"
+  },
+  {
+   "account_id": "pennyvalidators.pool.f863973.m0",
+   "stake": "959880608891323468254284292051"
+  },
+  {
+   "account_id": "davididol.pool.f863973.m0",
+   "stake": "358675400160809589172081883626"
+  },
+  {
+   "account_id": "bg-1.pool.f863973.m0",
+   "stake": "201311495375498138081341902363"
+  },
+  {
+   "account_id": "dev10011101.pool.f863973.m0",
+   "stake": "190127976010969436429226571060"
+  },
+  {
+   "account_id": "kraken.pool.f863973.m0",
+   "stake": "112597323006368034754245915005"
+  }
+ ]
+}
