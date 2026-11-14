@@ -149,7 +149,7 @@ function toast(html, kind = "") {
   el.className = `toast ${kind}`;
   el.innerHTML = html;
   $("#toasts").appendChild(el);
-  setTimeout(() => el.remove(), 7000);
+  setTimeout(() => el.remove(), kind === "err" ? 14000 : 7000);
 }
 function pushFeed(html, hash) {
   state.feed.unshift({ html, hash, at: new Date() });
@@ -289,7 +289,10 @@ async function createPlayer() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ newAccountId: accountId, newAccountPublicKey: keyPair.getPublicKey().toString() }),
     });
-    if (!res.ok) throw new Error(`Testnet faucet answered ${res.status}. Try again in a minute.`);
+    if (res.status === 429) {
+      throw new Error("The public NEAR testnet faucet is rate-limiting your network right now. Try again in a few minutes, or use \"Import a testnet account\" below the button.");
+    }
+    if (!res.ok) throw new Error(`Testnet faucet answered ${res.status}. Try again in a minute, or import a testnet account.`);
     for (let i = 0; i < 20 && !(await accountExists(accountId)); i++) {
       await new Promise((r) => setTimeout(r, 1500));
     }
@@ -312,6 +315,43 @@ async function createPlayer() {
     state.busy = null;
     render();
   }
+}
+
+async function importPlayer() {
+  const accountId = prompt("Testnet account id (for example yourname.testnet):")?.trim().toLowerCase();
+  if (!accountId) return;
+  const key = prompt(`Private key for ${accountId} (starts with ed25519:). It stays in this browser only. Use testnet keys only.`)?.trim();
+  if (!key) return;
+  if (!/^ed25519:[1-9A-HJ-NP-Za-km-z]{40,}$/.test(key)) {
+    toast("That does not look like an ed25519 private key.", "err");
+    return;
+  }
+  if (!(await accountExists(accountId))) {
+    toast(`${esc(accountId)} does not exist on testnet.`, "err");
+    return;
+  }
+  try {
+    const kp = KeyPair.fromString(key);
+    const keys = await rpc("query", { request_type: "view_access_key_list", finality: "final", account_id: accountId });
+    const pub = kp.getPublicKey().toString();
+    if (!keys.keys.some((k) => k.public_key === pub)) {
+      toast("That key is not an access key of this account.", "err");
+      return;
+    }
+  } catch (e) {
+    toast(esc(cleanError(e)), "err");
+    return;
+  }
+  const player = { accountId, key };
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify(player));
+  } catch {
+    /* tab-only */
+  }
+  setPlayer(player);
+  pushFeed(`Imported player <b>${esc(accountId)}</b>`);
+  toast(`Playing as <b>${esc(accountId)}</b>.`, "ok");
+  await refresh();
 }
 
 function resetPlayer() {
@@ -549,6 +589,7 @@ function renderPlayer() {
       ${questSteps()}
       <button class="btn primary block" data-action="create" ${state.busy ? "disabled" : ""}>${state.busy === "create" ? `<span class="spinner"></span> Signing you up...` : "Start playing - free"}</button>
       <p class="dim" style="margin:10px 0 0;font-size:12px">The key for this testnet account stays in your browser's local storage.</p>
+      <button class="btn ghost small" style="margin-top:8px;padding-left:0;color:var(--muted)" data-action="import">Already have a testnet account? Import it</button>
     </div>`;
   }
   const p = state.player;
@@ -793,6 +834,7 @@ document.addEventListener("click", async (e) => {
     return;
   }
   if (action === "create") return createPlayer();
+  if (action === "import") return importPlayer();
   if (action === "claim") return doClaim();
   if (action === "unback") return doUnback();
   if (action === "tick") return doTick();
