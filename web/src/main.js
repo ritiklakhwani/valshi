@@ -274,6 +274,7 @@ async function accountExists(id) {
 }
 
 async function createPlayer() {
+  state.joinError = null;
   state.busy = "create";
   render();
   try {
@@ -310,7 +311,8 @@ async function createPlayer() {
     await refresh();
     await doClaim();
   } catch (e) {
-    toast(esc(cleanError(e)), "err");
+    state.joinError = cleanError(e);
+    toast(esc(state.joinError), "err");
   } finally {
     state.busy = null;
     render();
@@ -589,7 +591,8 @@ function renderPlayer() {
       ${questSteps()}
       <button class="btn primary block" data-action="create" ${state.busy ? "disabled" : ""}>${state.busy === "create" ? `<span class="spinner"></span> Signing you up...` : "Start playing - free"}</button>
       <p class="dim" style="margin:10px 0 0;font-size:12px">The key for this testnet account stays in your browser's local storage.</p>
-      <button class="btn ghost small" style="margin-top:8px;padding-left:0;color:var(--muted)" data-action="import">Already have a testnet account? Import it</button>
+      ${state.joinError ? `<div class="join-err"><b>Could not create a player.</b> ${esc(state.joinError)}</div>` : ""}
+      <button class="btn ${state.joinError ? "block" : "ghost small"}" style="margin-top:8px;${state.joinError ? "" : "padding-left:0;color:var(--muted)"}" data-action="import">Already have a testnet account? Import it</button>
     </div>`;
   }
   const p = state.player;
