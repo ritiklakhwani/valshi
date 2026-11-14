@@ -4,6 +4,8 @@ A NEAR memecoin whose mechanic is fantasy sports on NEAR's own validator set. Yo
 
 Built at NEAR HACKATHON. Track: `memecoins`. Network: NEAR testnet.
 
+**Play in your browser:** https://ritiklakhwani.github.io/validator-league/ - press "Play now" (creates a free testnet account in your browser and claims 1,000 LEAGUE), press "Back" on a validator, then "Cash out" or "tick()". No wallet or install needed. To run it locally instead: `cd web && pnpm install && pnpm dev`.
+
 ## What it does
 
 1. **Claim.** Any account can claim 1,000 LEAGUE once (attach 0.01 NEAR for storage).
@@ -66,6 +68,24 @@ Requirements: Node 18+ for steps 1 and 3; Rust with the `wasm32-unknown-unknown`
 
 **About live scores:** the contract launched in testnet epoch 5447, a few hours before the submission deadline, so the first real score becomes possible after the next epoch boundary. From then on anyone can call `tick` (step 5) and `node scripts/verify.mjs` shows the result (`ups`, `downs`, `kicks`, unit value) for `node0`, `aurora.pool.f863973.m0` and `kraken.pool.f863973.m0`. Until then the scoring logic is shown by the unit tests (step 2), which mock the validator set.
 
+## Web app
+
+`web/` is a static page (Vite, near-api-js 7.5.3, no backend) built into `docs/play/` and served by GitHub Pages.
+
+- League table: every active testnet validator with its live stake share (RPC `validators`), the "next matchday" projection from the published next-epoch validator set (Rising / Slipping / Leaving set), LEAGUE backing and win/loss/kick record from the contract.
+- Player: "Play now" generates an ed25519 key in the browser, asks the public testnet faucet (`https://helper.nearprotocol.com/account`, the same one near-cli-rs uses) to create the account, and claims the starter pack. The key stays in the browser's local storage; this is a testnet convenience and would be replaced by a wallet connection on mainnet.
+- Actions: Back (with an outcome preview for rising / slipping / dropped), Cash out, and tick(). Every action is a real transaction; the match feed links each one to the explorer.
+
+## Repository layout
+
+| Path | What |
+| --- | --- |
+| `contract/` | Rust contract (`src/lib.rs`) and unit tests (`src/tests.rs`) |
+| `sim/` | 60-day simulation and the snapshot of real testnet validator stakes it starts from |
+| `scripts/` | `verify.mjs` (keyless), `demo.sh` (recorded run), `deploy.sh` (your own instance) |
+| `docs/demo-run.txt` | Output of the recorded testnet demo |
+| `web/` | Web app source; `docs/play/` is its build |
+
 ## Contract interface
 
 | Method | Who | Notes |
@@ -113,9 +133,9 @@ There is no method that changes any of these after `new`, and no owner role. The
 
 ## Hackathon window, AI disclosure and libraries
 
-- Repository created 2026-11-14 (inside the code window that opened 2026-10-19). Baseline: tag `pre-hackathon` (license and readme stub only). Submission: tag `hackathon-submission`. Everything between the two tags was written during the hackathon.
+- Repository created 2026-11-14 UTC (inside the code window that opened 2026-10-19). Baseline: tag `pre-hackathon` (license and readme stub only). Submission: tag `hackathon-submission`. Everything between the two tags was written during the hackathon. Full diff: https://github.com/ritiklakhwani/validator-league/compare/pre-hackathon...hackathon-submission
 - All code was written with AI coding assistance (Claude Code, Anthropic) under Ritik Lakhwani's direction and review.
-- Libraries and tools: `near-sdk` 5.30.2, `near-contract-standards` 5.30.2, `cargo-near` 0.23.0, `near-cli-rs` 0.31.1. The scripts use only Node built-ins. No templates.
+- Libraries and tools: `near-sdk` 5.30.2, `near-contract-standards` 5.30.2, `cargo-near` 0.23.0, `near-cli-rs` 0.31.1; web app: `near-api-js` 7.5.3, `vite` 8.3.8, Google Fonts (Archivo, JetBrains Mono). The scripts use only Node built-ins. No templates.
 - This is the author's only NEAR HACKATHON project.
 
 ## License
