@@ -1,0 +1,24 @@
+# secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+id.json
+
+# deps and builds
+node_modules/
+.pnpm-store/
+target/
+out/
+cache/
+dist/
+build/
+.next/
+coverage/
+
+# os / editor
+.DS_Store
+.vscode/
+.idea/
+*.log
