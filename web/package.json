@@ -1,0 +1,16 @@
+{
+  "name": "validator-league-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "near-api-js": "7.5.3"
+  },
+  "devDependencies": {
+    "vite": "8.3.8"
+  }
+}
