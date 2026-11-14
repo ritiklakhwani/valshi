@@ -1,0 +1,209 @@
+
+## Contract and rules
+view get_config {}
+{
+  "claim_amount": "1000000000000000000000",
+  "kick_bps": 3000,
+  "lose_bps": 200,
+  "max_claims": 1000000,
+  "min_back": "1000000000000000000",
+  "win_bps": 200
+}
+
+
+Here is your console command if you need to script it or re-run:
+    near contract call-function as-read-only validator-league.testnet get_config json-args {} network-config testnet now
+
+view get_stats {}
+{
+  "backed_validators": 0,
+  "claims": 0,
+  "epoch": 5447,
+  "launched_epoch": 5447,
+  "max_claims": 1000000,
+  "total_supply": "0"
+}
+
+
+Here is your console command if you need to script it or re-run:
+    near contract call-function as-read-only validator-league.testnet get_stats json-args {} network-config testnet now
+
+
+## 1. Three players claim their one-time 1000 LEAGUE
+signer=league-alice.testnet method=claim args={} deposit=0.01 NEAR
+Transaction ID: RRZi5Vxqui7g3mLWLqrmitqzUX2K9VeVzk8kRZjMKDk
+EVENT_JSON:{"standard":"nep141","version":"1.0.0","event":"ft_mint","data":[{"owner_id":"league-alice.testnet","amount":"1000000000000000000000","memo":"claim"}]}
+Function execution return value (printed to stdout):
+signer=league-bob.testnet method=claim args={} deposit=0.01 NEAR
+Transaction ID: 2ivrfNnNehVLy7pVgorwTbhbMGxmcuTaoFrmWkbyT34U
+EVENT_JSON:{"standard":"nep141","version":"1.0.0","event":"ft_mint","data":[{"owner_id":"league-bob.testnet","amount":"1000000000000000000000","memo":"claim"}]}
+Function execution return value (printed to stdout):
+signer=league-carol.testnet method=claim args={} deposit=0.01 NEAR
+Transaction ID: HtMv6AdeM36NzJqyWMQJRPW54UjJgtmDV3hQiSssxAvo
+EVENT_JSON:{"standard":"nep141","version":"1.0.0","event":"ft_mint","data":[{"owner_id":"league-carol.testnet","amount":"1000000000000000000000","memo":"claim"}]}
+Function execution return value (printed to stdout):
+
+## 2. Claiming twice is refused
+signer=league-alice.testnet method=claim args={} deposit=0.01 NEAR
+Transaction ID: 9EycQQj4yrhNK9wsq1fxPXRKhKutLhcKrT9RcHWoG3Wg
+Error: 
+Error: An error occurred during a `FunctionCall` action.
+ExecutionError("Smart contract panicked: Already claimed")
+
+## 3. Backing an account that is not an active validator is refused
+signer=league-carol.testnet method=back args={"validator_id":"league-bob.testnet","amount":"100000000000000000000"} deposit=0.005 NEAR
+Transaction ID: H5geFfL3fmxRyJMkiwvYFve6EjLtphacf6TxJX6jLRSP
+Error: 
+Error: An error occurred during a `FunctionCall` action.
+ExecutionError("Smart contract panicked: Not an active validator in the current epoch")
+
+## 4. Each player backs a real testnet validator (live stake share read on-chain)
+view get_live_share {"validator_id":"node0"}
+{
+  "epoch": 5447,
+  "share": "170371628930",
+  "stake": "105172947315729911234075889233159",
+  "total_stake": "617314913144930908099576993028332",
+  "validator_id": "node0"
+}
+
+
+Here is your console command if you need to script it or re-run:
+    near contract call-function as-read-only validator-league.testnet get_live_share json-args '{"validator_id":"node0"}' network-config testnet now
+
+signer=league-alice.testnet method=back args={"validator_id":"node0","amount":"500000000000000000000"} deposit=0.005 NEAR
+Transaction ID: FNHYQMfWztfiYoT2oJynuDr4j5KAHW9cArRYzFLpnv7n
+EVENT_JSON:{"standard":"nep141","version":"1.0.0","event":"ft_burn","data":[{"owner_id":"league-alice.testnet","amount":"500000000000000000000","memo":"back"}]}
+EVENT_JSON:{"standard":"validator_league","version":"1.0.0","event":"back","data":[{"account_id":"league-alice.testnet","validator_id":"node0","amount":"500000000000000000000","units":"500000000000000000000","index":"1000000000000","epoch":5447}]}
+Function execution return value (printed to stdout):
+view get_live_share {"validator_id":"aurora.pool.f863973.m0"}
+{
+  "epoch": 5447,
+  "share": "38261030185",
+  "stake": "23619104526081349539744837105423",
+  "total_stake": "617314913144930908099576993028332",
+  "validator_id": "aurora.pool.f863973.m0"
+}
+
+
+Here is your console command if you need to script it or re-run:
+    near contract call-function as-read-only validator-league.testnet get_live_share json-args '{"validator_id":"aurora.pool.f863973.m0"}' network-config testnet now
+
+signer=league-bob.testnet method=back args={"validator_id":"aurora.pool.f863973.m0","amount":"500000000000000000000"} deposit=0.005 NEAR
+Transaction ID: DLk5Xzx5kj9S5nMMk2D1BRUax5itYSHSaoB6mhmi5GFE
+EVENT_JSON:{"standard":"nep141","version":"1.0.0","event":"ft_burn","data":[{"owner_id":"league-bob.testnet","amount":"500000000000000000000","memo":"back"}]}
+EVENT_JSON:{"standard":"validator_league","version":"1.0.0","event":"back","data":[{"account_id":"league-bob.testnet","validator_id":"aurora.pool.f863973.m0","amount":"500000000000000000000","units":"500000000000000000000","index":"1000000000000","epoch":5447}]}
+Function execution return value (printed to stdout):
+view get_live_share {"validator_id":"kraken.pool.f863973.m0"}
+{
+  "epoch": 5447,
+  "share": "182398514",
+  "stake": "112597323006368034754245915005",
+  "total_stake": "617314913144930908099576993028332",
+  "validator_id": "kraken.pool.f863973.m0"
+}
+
+
+Here is your console command if you need to script it or re-run:
+    near contract call-function as-read-only validator-league.testnet get_live_share json-args '{"validator_id":"kraken.pool.f863973.m0"}' network-config testnet now
+
+signer=league-carol.testnet method=back args={"validator_id":"kraken.pool.f863973.m0","amount":"500000000000000000000"} deposit=0.005 NEAR
+Transaction ID: 6zbmrTTTHiD61bqWQHSSM54c6PSWqb6idtUjQiA6K8AF
+EVENT_JSON:{"standard":"nep141","version":"1.0.0","event":"ft_burn","data":[{"owner_id":"league-carol.testnet","amount":"500000000000000000000","memo":"back"}]}
+EVENT_JSON:{"standard":"validator_league","version":"1.0.0","event":"back","data":[{"account_id":"league-carol.testnet","validator_id":"kraken.pool.f863973.m0","amount":"500000000000000000000","units":"500000000000000000000","index":"1000000000000","epoch":5447}]}
+Function execution return value (printed to stdout):
+
+## 5. A second position for the same account is refused
+signer=league-bob.testnet method=back args={"validator_id":"node0","amount":"100000000000000000000"} deposit=0.005 NEAR
+Transaction ID: 2jL7TA4WZHCEVnsmWKamZ7CYBv1nz4auHCR1DaszooEX
+Error: 
+Error: An error occurred during a `FunctionCall` action.
+ExecutionError("Smart contract panicked: Already backing a validator, unback first")
+
+## 6. tick in the launch epoch scores nothing (scores happen once per epoch) and does not fail
+signer=league-bob.testnet method=tick args={} deposit=0 NEAR
+Transaction ID: JAzzS89zbAta8DMnRW7vvhcNM5VjciDi288pKQrJP643
+Nothing to score: every backed validator is already scored for epoch 5447
+Function execution return value (printed to stdout):
+
+## 7. Scoreboard and positions
+view get_validators {}
+[
+  [
+    "node0",
+    {
+      "downs": 0,
+      "epoch": 5447,
+      "flats": 0,
+      "index": "1000000000000",
+      "kicked": false,
+      "kicks": 0,
+      "share": "170371628930",
+      "units": "500000000000000000000",
+      "ups": 0
+    }
+  ],
+  [
+    "aurora.pool.f863973.m0",
+    {
+      "downs": 0,
+      "epoch": 5447,
+      "flats": 0,
+      "index": "1000000000000",
+      "kicked": false,
+      "kicks": 0,
+      "share": "38261030185",
+      "units": "500000000000000000000",
+      "ups": 0
+    }
+  ],
+  [
+    "kraken.pool.f863973.m0",
+    {
+      "downs": 0,
+      "epoch": 5447,
+      "flats": 0,
+      "index": "1000000000000",
+      "kicked": false,
+      "kicks": 0,
+      "share": "182398514",
+      "units": "500000000000000000000",
+      "ups": 0
+    }
+  ]
+]
+
+
+Here is your console command if you need to script it or re-run:
+    near contract call-function as-read-only validator-league.testnet get_validators json-args {} network-config testnet now
+
+view get_position {"account_id":"league-alice.testnet"}
+{
+  "entry_epoch": 5447,
+  "principal": "500000000000000000000",
+  "units": "500000000000000000000",
+  "validator_id": "node0",
+  "value": "500000000000000000000"
+}
+
+
+Here is your console command if you need to script it or re-run:
+    near contract call-function as-read-only validator-league.testnet get_position json-args '{"account_id":"league-alice.testnet"}' network-config testnet now
+
+view get_stats {}
+{
+  "backed_validators": 3,
+  "claims": 3,
+  "epoch": 5447,
+  "launched_epoch": 5447,
+  "max_claims": 1000000,
+  "total_supply": "1500000000000000000000"
+}
+
+
+Here is your console command if you need to script it or re-run:
+    near contract call-function as-read-only validator-league.testnet get_stats json-args {} network-config testnet now
+
+view ft_balance_of {"account_id":"league-alice.testnet"}
+
+## Done. After the next epoch boundary anyone can call tick to score these validators.
