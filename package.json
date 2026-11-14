@@ -1,0 +1,18 @@
+{
+  "name": "validator-league",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Validator League: a NEAR memecoin whose mechanic is fantasy sports on NEAR's own validator set",
+  "license": "MIT",
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "verify": "node scripts/verify.mjs",
+    "sim": "node sim/simulate.mjs",
+    "sim:live": "node sim/simulate.mjs --live",
+    "test": "cd contract && cargo test",
+    "build": "cd contract && cargo near build non-reproducible-wasm",
+    "demo": "./scripts/demo.sh",
+    "deploy": "./scripts/deploy.sh"
+  }
+}
