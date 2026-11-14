@@ -2,7 +2,7 @@ import "./style.css";
 import { Account, JsonRpcProvider, KeyPair, nearToYocto, teraToGas } from "near-api-js";
 
 // ---------- constants ----------
-const CONTRACT = "validator-league.testnet";
+const CONTRACT = "valshi.testnet";
 const RPC = "https://test.rpc.fastnear.com";
 // Testnet faucet used by near-cli-rs `sponsor-by-faucet-service`.
 const FAUCET = "https://helper.nearprotocol.com/account";
@@ -11,7 +11,7 @@ const EXPLORER_ACCOUNT = (a) => `https://testnet.nearblocks.io/address/${a}`;
 const EPOCH_LENGTH = 43200n; // testnet epoch length in blocks (EXPERIMENTAL_genesis_config)
 const TOKEN = 10n ** 18n;
 const INDEX_ONE = 10n ** 12n;
-const STORE_KEY = "validator-league-player-v1";
+const STORE_KEY = "valshi-player-v1";
 const REFRESH_MS = 15000;
 
 const provider = new JsonRpcProvider({ url: RPC });
@@ -41,7 +41,7 @@ const state = {
   updatedAt: null,
 };
 
-const HELP_KEY = "validator-league-help-seen-v1";
+const HELP_KEY = "valshi-help-seen-v1";
 
 // Deterministic badge colour per validator, from the warm palette.
 const BADGE = ["#ff6a2b", "#f2c14e", "#8fd694", "#ff7a6b", "#e8d5b0", "#d9a066", "#b8c97a", "#f0a77a"];
@@ -371,8 +371,8 @@ const txLink = (hash) => (hash ? ` <a href="${EXPLORER_TX(hash)}" target="_blank
 async function doClaim() {
   const r = await act("claim", "claim", {}, "0.01");
   if (!r) return;
-  pushFeed(`Collected the <b>1,000 LEAGUE</b> starter pack`, r.hash);
-  toast(`Starter pack collected: 1,000 LEAGUE. Now pick a validator in the table.${txLink(r.hash)}`, "ok");
+  pushFeed(`Collected the <b>1,000 VALSHI</b> starter pack`, r.hash);
+  toast(`Starter pack collected: 1,000 VALSHI. Now pick a validator in the table.${txLink(r.hash)}`, "ok");
   confetti();
   render();
 }
@@ -382,7 +382,7 @@ async function doBack(validatorId, amount) {
   if (!r) return;
   state.modal = null;
   renderModal();
-  pushFeed(`Backed <b>${esc(validatorId)}</b> with <b>${fmtTok(amount)}</b> LEAGUE`, r.hash);
+  pushFeed(`Backed <b>${esc(validatorId)}</b> with <b>${fmtTok(amount)}</b> VALSHI`, r.hash);
   toast(`You now back <b>${esc(shortId(validatorId))}</b>. Your result lands at the next whistle.${txLink(r.hash)}`, "ok");
   confetti();
   render();
@@ -396,10 +396,10 @@ async function doUnback() {
   const principal = BigInt(before?.principal ?? "0");
   const diff = value - principal;
   pushFeed(
-    `Cashed out <b>${fmtTok(value)}</b> LEAGUE from <b>${esc(before?.validator_id ?? "")}</b> (<span class="${diff >= 0n ? "pos" : "neg"}">${diff >= 0n ? "+" : ""}${fmtTok(diff)}</span>)`,
+    `Cashed out <b>${fmtTok(value)}</b> VALSHI from <b>${esc(before?.validator_id ?? "")}</b> (<span class="${diff >= 0n ? "pos" : "neg"}">${diff >= 0n ? "+" : ""}${fmtTok(diff)}</span>)`,
     r.hash,
   );
-  toast(`Cashed out ${fmtTok(value)} LEAGUE.${txLink(r.hash)}`, "ok");
+  toast(`Cashed out ${fmtTok(value)} VALSHI.${txLink(r.hash)}`, "ok");
   if (diff > 0n) confetti();
   render();
 }
@@ -476,7 +476,7 @@ function renderTable() {
       const pending = pendingResult(v, rec);
       const inLeague = rec ? fmtTok(recordValue(rec), 0) : "-";
       const canBack = state.player && !state.position && state.league > 0n && !v.inactive;
-      const why = !state.player ? "Press Start playing first" : state.position ? "Cash out your current team first" : state.league === 0n ? "Collect your LEAGUE first" : "";
+      const why = !state.player ? "Press Start playing first" : state.position ? "Cash out your current team first" : state.league === 0n ? "Collect your VALSHI first" : "";
       const btn =
         mine === v.id
           ? `<span class="tag ready">Your team</span>`
@@ -496,7 +496,7 @@ function renderTable() {
     <thead><tr><th>#</th><th>Validator</th>
       <th><span class="th-tip" title="This validator's share of all stake right now, read live from NEAR testnet. This is what the contract scores.">Stake share</span></th>
       <th class="hide-sm"><span class="th-tip" title="NEAR publishes the next epoch's validator set in advance. Rising = its share grows next matchday, Slipping = shrinks, Leaving = drops out (-30% for backers).">Next matchday</span></th>
-      <th class="hide-sm"><span class="th-tip" title="Total LEAGUE currently locked on this validator by all players, at its current value.">LEAGUE backing</span></th>
+      <th class="hide-sm"><span class="th-tip" title="Total VALSHI currently locked on this validator by all players, at its current value.">VALSHI backing</span></th>
       <th class="hide-sm"><span class="th-tip" title="Scored matchdays: green = share rose, coral = fell, red = kicked.">Record</span></th><th></th></tr></thead>
     <tbody>${rows || `<tr><td colspan="7" class="feed-empty">No validators in this view right now.</td></tr>`}</tbody></table>`;
 }
@@ -505,7 +505,7 @@ function questSteps() {
   const scored = state.position && state.board.get(state.position.validator_id)?.epoch > state.position.entry_epoch;
   const steps = [
     ["Join the league", !!state.player],
-    ["Collect 1,000 LEAGUE", state.claimed],
+    ["Collect 1,000 VALSHI", state.claimed],
     ["Back a validator", !!state.position],
     ["Wait for the whistle", !!scored],
     ["Cash out (or ride it)", false],
@@ -520,11 +520,11 @@ function renderHelp() {
   const c = state.config;
   return `<div class="scrim" data-action="close-modal">
     <div class="modal wide" role="dialog" aria-label="How to play">
-      <h3>How to play Validator League</h3>
+      <h3>How to play Valshi</h3>
       <div class="sub">Fantasy sports where the players are NEAR's real validators and the blockchain is the referee.</div>
       <div class="steps">
-        <div class="hstep"><div class="n">01</div><div class="t">Join free</div><div class="d">Press Start playing. We create a free NEAR testnet account in your browser and give you 1,000 LEAGUE. No wallet, no real money.</div></div>
-        <div class="hstep"><div class="n">02</div><div class="t">Pick a team</div><div class="d">Choose a validator in the table and lock some LEAGUE on it. Tip: the Next matchday column shows who is rising or leaving.</div></div>
+        <div class="hstep"><div class="n">01</div><div class="t">Join free</div><div class="d">Press Start playing. We create a free NEAR testnet account in your browser and give you 1,000 VALSHI. No wallet, no real money.</div></div>
+        <div class="hstep"><div class="n">02</div><div class="t">Pick a team</div><div class="d">Choose a validator in the table and lock some VALSHI on it. Tip: the Next matchday column shows who is rising or leaving.</div></div>
         <div class="hstep"><div class="n">03</div><div class="t">The whistle</div><div class="d">Every NEAR epoch (about 12 hours) is a matchday. Anyone presses tick() and the contract reads each validator's stake share from the chain: share up +${c.win_bps / 100}%, down -${c.lose_bps / 100}%, dropped -${c.kick_bps / 100}%.</div></div>
         <div class="hstep"><div class="n">04</div><div class="t">Cash out</div><div class="d">Unlock whenever you want at the current value. Wins are minted, losses are burned. Ride a hot validator for many matchdays to compound.</div></div>
       </div>
@@ -545,7 +545,7 @@ function renderPlayer() {
   if (!state.player) {
     return `<div class="panel player">
       <h3>Join the league</h3>
-      <p>One click creates a free NEAR testnet account in this browser and collects your 1,000 LEAGUE starter pack. No wallet, no install, no real money.</p>
+      <p>One click creates a free NEAR testnet account in this browser and collects your 1,000 VALSHI starter pack. No wallet, no install, no real money.</p>
       ${questSteps()}
       <button class="btn primary block" data-action="create" ${state.busy ? "disabled" : ""}>${state.busy === "create" ? `<span class="spinner"></span> Signing you up...` : "Start playing - free"}</button>
       <p class="dim" style="margin:10px 0 0;font-size:12px">The key for this testnet account stays in your browser's local storage.</p>
@@ -577,7 +577,7 @@ function renderPlayer() {
   } else if (state.claimed) {
     ticket = `<div class="ticket"><div class="label">No team yet</div><div class="team">Pick a validator from the table</div><div class="muted" style="font-size:13px">Press Back on any row. Rising validators grow your stake +${state.config.win_bps / 100}% per matchday.</div></div>`;
   } else {
-    ticket = `<button class="btn primary block" data-action="claim" ${state.busy ? "disabled" : ""}>${state.busy === "claim" ? `<span class="spinner"></span> Collecting...` : "Collect 1,000 LEAGUE"}</button><div style="height:12px"></div>`;
+    ticket = `<button class="btn primary block" data-action="claim" ${state.busy ? "disabled" : ""}>${state.busy === "claim" ? `<span class="spinner"></span> Collecting...` : "Collect 1,000 VALSHI"}</button><div style="height:12px"></div>`;
   }
   return `<div class="panel player">
     <div class="id-row">
@@ -585,7 +585,7 @@ function renderPlayer() {
       <button class="btn ghost small" data-action="menu">Key</button>
     </div>
     <div class="stats">
-      <div class="stat"><div class="k">LEAGUE</div><div class="v">${fmtTok(state.league, 0)}</div></div>
+      <div class="stat"><div class="k">VALSHI</div><div class="v">${fmtTok(state.league, 0)}</div></div>
       <div class="stat"><div class="k">Testnet NEAR</div><div class="v">${fmtNear(state.near)}</div></div>
     </div>
     ${questSteps()}
@@ -621,14 +621,14 @@ function renderFeed() {
 function render() {
   const app = $("#app");
   if (!state.loaded) {
-    app.innerHTML = `<div class="wrap" style="padding:80px 0;text-align:center"><div class="wordmark">Validator <span>League</span></div><p class="muted pulse">${state.error ? esc(state.error) : "Reading the validator set from NEAR testnet..."}</p></div>`;
+    app.innerHTML = `<div class="wrap" style="padding:80px 0;text-align:center"><div class="wordmark">Val<span>shi</span></div><p class="muted pulse">${state.error ? esc(state.error) : "Reading the validator set from NEAR testnet..."}</p></div>`;
     return;
   }
   const c = state.config;
   app.innerHTML = `
   <div class="wrap">
     <header class="top">
-      <div class="brand"><div class="wordmark">Validator <span>League</span></div><span class="net">NEAR testnet</span></div>
+      <div class="brand"><div class="wordmark">Val<span>shi</span></div><span class="net">NEAR testnet</span></div>
       <div class="top-right">
         <div class="matchday">
           <div class="md-block"><div class="md-label">Matchday</div><div class="md-value">${state.epoch}</div></div>
@@ -637,7 +637,7 @@ function render() {
         <button class="btn ghost small" data-action="help">How to play</button>
         ${
           state.player
-            ? `<span class="chip">${avatar(state.player.accountId)}${fmtTok(state.league, 0)} LEAGUE</span>`
+            ? `<span class="chip">${avatar(state.player.accountId)}${fmtTok(state.league, 0)} VALSHI</span>`
             : `<button class="btn primary" data-action="create" ${state.busy ? "disabled" : ""}>${state.busy === "create" ? `<span class="spinner"></span>` : "Start playing"}</button>`
         }
       </div>
@@ -658,7 +658,7 @@ function render() {
     <section class="hero">
       <div>
         <h1>Back a validator.<br/><em>The chain keeps score.</em></h1>
-        <p>Fantasy sports on NEAR's real validators. Lock LEAGUE on one; every epoch the contract reads its share of all stake straight from the NEAR runtime. Share up, you win. No oracle, no admin, no way to fake the result.</p>
+        <p>Fantasy sports on NEAR's real validators. Lock VALSHI on one; every epoch the contract reads its share of all stake straight from the NEAR runtime. Share up, you win. No oracle, no admin, no way to fake the result.</p>
         <div class="cta-row">
           ${state.player ? `<button class="btn primary xl" data-action="scroll-table">Pick your team</button>` : `<button class="btn primary xl" data-action="create" ${state.busy ? "disabled" : ""}>${state.busy === "create" ? `<span class="spinner"></span> Signing you up...` : "Start playing - free"}</button>`}
           <button class="btn xl" data-action="help">How it works</button>
@@ -690,8 +690,8 @@ function render() {
     </section>
 
     <section class="how">
-      <div class="step"><div class="n">01</div><div class="t">Join</div><div class="d">Play now creates a testnet account and claims 1,000 LEAGUE. One claim per account.</div></div>
-      <div class="step"><div class="n">02</div><div class="t">Pick a team</div><div class="d">Lock LEAGUE on one active validator. Read the next-matchday column: it is the chain's own published schedule.</div></div>
+      <div class="step"><div class="n">01</div><div class="t">Join</div><div class="d">Play now creates a testnet account and claims 1,000 VALSHI. One claim per account.</div></div>
+      <div class="step"><div class="n">02</div><div class="t">Pick a team</div><div class="d">Lock VALSHI on one active validator. Read the next-matchday column: it is the chain's own published schedule.</div></div>
       <div class="step"><div class="n">03</div><div class="t">Whistle</div><div class="d">Each epoch, anyone calls tick(). The contract compares each backed validator's stake share with the last matchday.</div></div>
       <div class="step"><div class="n">04</div><div class="t">Cash out</div><div class="d">Unlock any time at the current value. Gains are minted, losses are burned.</div></div>
     </section>
@@ -726,7 +726,7 @@ function renderModal() {
     <div class="modal" role="dialog" aria-label="Back a validator">
       <h3>Back ${esc(shortId(id))}</h3>
       <div class="sub">Stake share ${v ? pct(v.share, 3) : "-"} &middot; ${v ? projectionTag(v.projection) : ""} for next matchday</div>
-      <div class="amount"><input id="amount-input" inputmode="decimal" value="${esc(state.modal.input)}" autocomplete="off" /><span class="muted mono">LEAGUE</span></div>
+      <div class="amount"><input id="amount-input" inputmode="decimal" value="${esc(state.modal.input)}" autocomplete="off" /><span class="muted mono">VALSHI</span></div>
       <div class="presets">
         ${[25, 50, 75, 100].map((p) => `<button class="btn small" data-action="preset" data-p="${p}">${p === 100 ? "Max" : p + "%"}</button>`).join("")}
       </div>
@@ -738,7 +738,7 @@ function renderModal() {
       <div class="dim" style="font-size:12px;margin:-6px 0 14px">Per matchday. Attaches 0.005 testnet NEAR for storage, returned when you cash out.</div>
       <div class="modal-actions">
         <button class="btn ghost" data-action="close-modal">Cancel</button>
-        <button class="btn primary" data-action="confirm-back" ${over || below || state.busy ? "disabled" : ""}>${state.busy === "back" ? `<span class="spinner"></span> Locking...` : over ? "Not enough LEAGUE" : below ? `Min ${fmtTok(BigInt(c.min_back), 0)}` : "Lock it in"}</button>
+        <button class="btn primary" data-action="confirm-back" ${over || below || state.busy ? "disabled" : ""}>${state.busy === "back" ? `<span class="spinner"></span> Locking...` : over ? "Not enough VALSHI" : below ? `Min ${fmtTok(BigInt(c.min_back), 0)}` : "Lock it in"}</button>
       </div>
     </div>
   </div>`;

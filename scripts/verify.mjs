@@ -1,4 +1,4 @@
-// Keyless verifier for Validator League. Needs only Node 18+ and internet.
+// Keyless verifier for Valshi. Needs only Node 18+ and internet.
 //
 //   node scripts/verify.mjs
 //
@@ -9,11 +9,11 @@
 //    checks that its on-chain outcome (success or the exact panic message) and its
 //    EVENT_JSON logs match what the demo recorded.
 //
-// Env: CONTRACT (default validator-league.testnet), NEAR_RPC, NEAR_ARCHIVAL_RPC.
+// Env: CONTRACT (default valshi.testnet), NEAR_RPC, NEAR_ARCHIVAL_RPC.
 
 import { readFileSync } from "node:fs";
 
-const CONTRACT = process.env.CONTRACT ?? "validator-league.testnet";
+const CONTRACT = process.env.CONTRACT ?? "valshi.testnet";
 const RPC = process.env.NEAR_RPC ?? "https://test.rpc.fastnear.com";
 const ARCHIVAL = [
   process.env.NEAR_ARCHIVAL_RPC,
@@ -67,7 +67,7 @@ const check = (ok, msg) => {
   if (!ok) failures++;
 };
 
-console.log(`Validator League verifier - contract ${CONTRACT}\n`);
+console.log(`Valshi verifier - contract ${CONTRACT}\n`);
 
 // 1. Rules and state
 const config = await view("get_config");

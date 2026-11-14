@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
-# Scripted Validator League demo on NEAR testnet.
+# Scripted Valshi demo on NEAR testnet.
 #
 # Needs near-cli-rs and keys for the accounts below in your keychain
 # (see scripts/deploy.sh to create your own). Every step prints the transaction ID;
 # the run is also written to docs/demo-run.txt.
 #
-#   CONTRACT=validator-league.testnet ALICE=... BOB=... CAROL=... ./scripts/demo.sh
+#   CONTRACT=valshi.testnet ALICE=... BOB=... CAROL=... ./scripts/demo.sh
 
 set -uo pipefail
-CONTRACT=${CONTRACT:-validator-league.testnet}
-ALICE=${ALICE:-league-alice.testnet}
-BOB=${BOB:-league-bob.testnet}
-CAROL=${CAROL:-league-carol.testnet}
+CONTRACT=${CONTRACT:-valshi.testnet}
+ALICE=${ALICE:-valshi-alice.testnet}
+BOB=${BOB:-valshi-bob.testnet}
+CAROL=${CAROL:-valshi-carol.testnet}
 V_ALICE=${V_ALICE:-node0}                        # biggest testnet validator
 V_BOB=${V_BOB:-aurora.pool.f863973.m0}           # mid-size
 V_CAROL=${V_CAROL:-kraken.pool.f863973.m0}       # smallest
@@ -43,7 +43,7 @@ say "Contract and rules"
 view get_config '{}'
 view get_stats '{}'
 
-say "1. Three players claim their one-time 1000 LEAGUE"
+say "1. Three players claim their one-time 1000 VALSHI"
 call "$ALICE" claim '{}' '0.01 NEAR'
 call "$BOB" claim '{}' '0.01 NEAR'
 call "$CAROL" claim '{}' '0.01 NEAR'

@@ -12,7 +12,7 @@ view get_config {}
 
 
 Here is your console command if you need to script it or re-run:
-    near contract call-function as-read-only validator-league.testnet get_config json-args {} network-config testnet now
+    near contract call-function as-read-only valshi.testnet get_config json-args {} network-config testnet now
 
 view get_stats {}
 {
@@ -26,33 +26,33 @@ view get_stats {}
 
 
 Here is your console command if you need to script it or re-run:
-    near contract call-function as-read-only validator-league.testnet get_stats json-args {} network-config testnet now
+    near contract call-function as-read-only valshi.testnet get_stats json-args {} network-config testnet now
 
 
-## 1. Three players claim their one-time 1000 LEAGUE
-signer=league-alice.testnet method=claim args={} deposit=0.01 NEAR
-Transaction ID: RRZi5Vxqui7g3mLWLqrmitqzUX2K9VeVzk8kRZjMKDk
-EVENT_JSON:{"standard":"nep141","version":"1.0.0","event":"ft_mint","data":[{"owner_id":"league-alice.testnet","amount":"1000000000000000000000","memo":"claim"}]}
+## 1. Three players claim their one-time 1000 VALSHI
+signer=valshi-alice.testnet method=claim args={} deposit=0.01 NEAR
+Transaction ID: 5mHekgC22K41k6zdZxbj7spR6idVJ2MHAm3jJw5fpebt
+EVENT_JSON:{"standard":"nep141","version":"1.0.0","event":"ft_mint","data":[{"owner_id":"valshi-alice.testnet","amount":"1000000000000000000000","memo":"claim"}]}
 Function execution return value (printed to stdout):
-signer=league-bob.testnet method=claim args={} deposit=0.01 NEAR
-Transaction ID: 2ivrfNnNehVLy7pVgorwTbhbMGxmcuTaoFrmWkbyT34U
-EVENT_JSON:{"standard":"nep141","version":"1.0.0","event":"ft_mint","data":[{"owner_id":"league-bob.testnet","amount":"1000000000000000000000","memo":"claim"}]}
+signer=valshi-bob.testnet method=claim args={} deposit=0.01 NEAR
+Transaction ID: 3Q3ATJoRPZry1XPhTx3sf4QzvCftGbGBoXpN9Fpf1gwi
+EVENT_JSON:{"standard":"nep141","version":"1.0.0","event":"ft_mint","data":[{"owner_id":"valshi-bob.testnet","amount":"1000000000000000000000","memo":"claim"}]}
 Function execution return value (printed to stdout):
-signer=league-carol.testnet method=claim args={} deposit=0.01 NEAR
-Transaction ID: HtMv6AdeM36NzJqyWMQJRPW54UjJgtmDV3hQiSssxAvo
-EVENT_JSON:{"standard":"nep141","version":"1.0.0","event":"ft_mint","data":[{"owner_id":"league-carol.testnet","amount":"1000000000000000000000","memo":"claim"}]}
+signer=valshi-carol.testnet method=claim args={} deposit=0.01 NEAR
+Transaction ID: E1UHFpPvts3z5XYriUCS6i8Sha2YfeNFc2t8aZ5styVp
+EVENT_JSON:{"standard":"nep141","version":"1.0.0","event":"ft_mint","data":[{"owner_id":"valshi-carol.testnet","amount":"1000000000000000000000","memo":"claim"}]}
 Function execution return value (printed to stdout):
 
 ## 2. Claiming twice is refused
-signer=league-alice.testnet method=claim args={} deposit=0.01 NEAR
-Transaction ID: 9EycQQj4yrhNK9wsq1fxPXRKhKutLhcKrT9RcHWoG3Wg
+signer=valshi-alice.testnet method=claim args={} deposit=0.01 NEAR
+Transaction ID: HAYfZeDJibjs2hc5iamSb2AamPJFaYixUimv8rjWjUDC
 Error: 
 Error: An error occurred during a `FunctionCall` action.
 ExecutionError("Smart contract panicked: Already claimed")
 
 ## 3. Backing an account that is not an active validator is refused
-signer=league-carol.testnet method=back args={"validator_id":"league-bob.testnet","amount":"100000000000000000000"} deposit=0.005 NEAR
-Transaction ID: H5geFfL3fmxRyJMkiwvYFve6EjLtphacf6TxJX6jLRSP
+signer=valshi-carol.testnet method=back args={"validator_id":"valshi-bob.testnet","amount":"100000000000000000000"} deposit=0.005 NEAR
+Transaction ID: 4uf6pd4aR7e6MSoUV3JFB7NMgWFLQAGTeBzPMNvgXjw1
 Error: 
 Error: An error occurred during a `FunctionCall` action.
 ExecutionError("Smart contract panicked: Not an active validator in the current epoch")
@@ -69,12 +69,12 @@ view get_live_share {"validator_id":"node0"}
 
 
 Here is your console command if you need to script it or re-run:
-    near contract call-function as-read-only validator-league.testnet get_live_share json-args '{"validator_id":"node0"}' network-config testnet now
+    near contract call-function as-read-only valshi.testnet get_live_share json-args '{"validator_id":"node0"}' network-config testnet now
 
-signer=league-alice.testnet method=back args={"validator_id":"node0","amount":"500000000000000000000"} deposit=0.005 NEAR
-Transaction ID: FNHYQMfWztfiYoT2oJynuDr4j5KAHW9cArRYzFLpnv7n
-EVENT_JSON:{"standard":"nep141","version":"1.0.0","event":"ft_burn","data":[{"owner_id":"league-alice.testnet","amount":"500000000000000000000","memo":"back"}]}
-EVENT_JSON:{"standard":"validator_league","version":"1.0.0","event":"back","data":[{"account_id":"league-alice.testnet","validator_id":"node0","amount":"500000000000000000000","units":"500000000000000000000","index":"1000000000000","epoch":5447}]}
+signer=valshi-alice.testnet method=back args={"validator_id":"node0","amount":"500000000000000000000"} deposit=0.005 NEAR
+Transaction ID: 5JQyFynu8FyqeBdSM9ZYuRzZeXmeBwW7tnZ4CHrgb2b5
+EVENT_JSON:{"standard":"nep141","version":"1.0.0","event":"ft_burn","data":[{"owner_id":"valshi-alice.testnet","amount":"500000000000000000000","memo":"back"}]}
+EVENT_JSON:{"standard":"validator_league","version":"1.0.0","event":"back","data":[{"account_id":"valshi-alice.testnet","validator_id":"node0","amount":"500000000000000000000","units":"500000000000000000000","index":"1000000000000","epoch":5447}]}
 Function execution return value (printed to stdout):
 view get_live_share {"validator_id":"aurora.pool.f863973.m0"}
 {
@@ -87,12 +87,12 @@ view get_live_share {"validator_id":"aurora.pool.f863973.m0"}
 
 
 Here is your console command if you need to script it or re-run:
-    near contract call-function as-read-only validator-league.testnet get_live_share json-args '{"validator_id":"aurora.pool.f863973.m0"}' network-config testnet now
+    near contract call-function as-read-only valshi.testnet get_live_share json-args '{"validator_id":"aurora.pool.f863973.m0"}' network-config testnet now
 
-signer=league-bob.testnet method=back args={"validator_id":"aurora.pool.f863973.m0","amount":"500000000000000000000"} deposit=0.005 NEAR
-Transaction ID: DLk5Xzx5kj9S5nMMk2D1BRUax5itYSHSaoB6mhmi5GFE
-EVENT_JSON:{"standard":"nep141","version":"1.0.0","event":"ft_burn","data":[{"owner_id":"league-bob.testnet","amount":"500000000000000000000","memo":"back"}]}
-EVENT_JSON:{"standard":"validator_league","version":"1.0.0","event":"back","data":[{"account_id":"league-bob.testnet","validator_id":"aurora.pool.f863973.m0","amount":"500000000000000000000","units":"500000000000000000000","index":"1000000000000","epoch":5447}]}
+signer=valshi-bob.testnet method=back args={"validator_id":"aurora.pool.f863973.m0","amount":"500000000000000000000"} deposit=0.005 NEAR
+Transaction ID: 6H6VfVBpN7HX81HehYF2PNe3w4wv8m56BuPXNcDoZSXw
+EVENT_JSON:{"standard":"nep141","version":"1.0.0","event":"ft_burn","data":[{"owner_id":"valshi-bob.testnet","amount":"500000000000000000000","memo":"back"}]}
+EVENT_JSON:{"standard":"validator_league","version":"1.0.0","event":"back","data":[{"account_id":"valshi-bob.testnet","validator_id":"aurora.pool.f863973.m0","amount":"500000000000000000000","units":"500000000000000000000","index":"1000000000000","epoch":5447}]}
 Function execution return value (printed to stdout):
 view get_live_share {"validator_id":"kraken.pool.f863973.m0"}
 {
@@ -105,24 +105,24 @@ view get_live_share {"validator_id":"kraken.pool.f863973.m0"}
 
 
 Here is your console command if you need to script it or re-run:
-    near contract call-function as-read-only validator-league.testnet get_live_share json-args '{"validator_id":"kraken.pool.f863973.m0"}' network-config testnet now
+    near contract call-function as-read-only valshi.testnet get_live_share json-args '{"validator_id":"kraken.pool.f863973.m0"}' network-config testnet now
 
-signer=league-carol.testnet method=back args={"validator_id":"kraken.pool.f863973.m0","amount":"500000000000000000000"} deposit=0.005 NEAR
-Transaction ID: 6zbmrTTTHiD61bqWQHSSM54c6PSWqb6idtUjQiA6K8AF
-EVENT_JSON:{"standard":"nep141","version":"1.0.0","event":"ft_burn","data":[{"owner_id":"league-carol.testnet","amount":"500000000000000000000","memo":"back"}]}
-EVENT_JSON:{"standard":"validator_league","version":"1.0.0","event":"back","data":[{"account_id":"league-carol.testnet","validator_id":"kraken.pool.f863973.m0","amount":"500000000000000000000","units":"500000000000000000000","index":"1000000000000","epoch":5447}]}
+signer=valshi-carol.testnet method=back args={"validator_id":"kraken.pool.f863973.m0","amount":"500000000000000000000"} deposit=0.005 NEAR
+Transaction ID: q2KTLgJwkSjwh4LUku1svfM4BzTPGbXqBmjth5EkdkU
+EVENT_JSON:{"standard":"nep141","version":"1.0.0","event":"ft_burn","data":[{"owner_id":"valshi-carol.testnet","amount":"500000000000000000000","memo":"back"}]}
+EVENT_JSON:{"standard":"validator_league","version":"1.0.0","event":"back","data":[{"account_id":"valshi-carol.testnet","validator_id":"kraken.pool.f863973.m0","amount":"500000000000000000000","units":"500000000000000000000","index":"1000000000000","epoch":5447}]}
 Function execution return value (printed to stdout):
 
 ## 5. A second position for the same account is refused
-signer=league-bob.testnet method=back args={"validator_id":"node0","amount":"100000000000000000000"} deposit=0.005 NEAR
-Transaction ID: 2jL7TA4WZHCEVnsmWKamZ7CYBv1nz4auHCR1DaszooEX
+signer=valshi-bob.testnet method=back args={"validator_id":"node0","amount":"100000000000000000000"} deposit=0.005 NEAR
+Transaction ID: 2uK77sY4nvmr58mXw2V5MMWG5yGW4MST96QXn9e22gxF
 Error: 
 Error: An error occurred during a `FunctionCall` action.
 ExecutionError("Smart contract panicked: Already backing a validator, unback first")
 
 ## 6. tick in the launch epoch scores nothing (scores happen once per epoch) and does not fail
-signer=league-bob.testnet method=tick args={} deposit=0 NEAR
-Transaction ID: JAzzS89zbAta8DMnRW7vvhcNM5VjciDi288pKQrJP643
+signer=valshi-bob.testnet method=tick args={} deposit=0 NEAR
+Transaction ID: FyNDy6oW31kvdyiJsUoFJkgaDTB38pobGwX4fZRtiusM
 Nothing to score: every backed validator is already scored for epoch 5447
 Function execution return value (printed to stdout):
 
@@ -175,9 +175,9 @@ view get_validators {}
 
 
 Here is your console command if you need to script it or re-run:
-    near contract call-function as-read-only validator-league.testnet get_validators json-args {} network-config testnet now
+    near contract call-function as-read-only valshi.testnet get_validators json-args {} network-config testnet now
 
-view get_position {"account_id":"league-alice.testnet"}
+view get_position {"account_id":"valshi-alice.testnet"}
 {
   "entry_epoch": 5447,
   "principal": "500000000000000000000",
@@ -188,7 +188,7 @@ view get_position {"account_id":"league-alice.testnet"}
 
 
 Here is your console command if you need to script it or re-run:
-    near contract call-function as-read-only validator-league.testnet get_position json-args '{"account_id":"league-alice.testnet"}' network-config testnet now
+    near contract call-function as-read-only valshi.testnet get_position json-args '{"account_id":"valshi-alice.testnet"}' network-config testnet now
 
 view get_stats {}
 {
@@ -202,8 +202,8 @@ view get_stats {}
 
 
 Here is your console command if you need to script it or re-run:
-    near contract call-function as-read-only validator-league.testnet get_stats json-args {} network-config testnet now
+    near contract call-function as-read-only valshi.testnet get_stats json-args {} network-config testnet now
 
-view ft_balance_of {"account_id":"league-alice.testnet"}
+view ft_balance_of {"account_id":"valshi-alice.testnet"}
 
 ## Done. After the next epoch boundary anyone can call tick to score these validators.

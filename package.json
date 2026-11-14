@@ -1,8 +1,8 @@
 {
-  "name": "validator-league",
+  "name": "valshi",
   "version": "0.1.0",
   "private": true,
-  "description": "Validator League: a NEAR memecoin whose mechanic is fantasy sports on NEAR's own validator set",
+  "description": "Valshi: a NEAR memecoin whose mechanic is fantasy sports on NEAR's own validator set",
   "license": "MIT",
   "type": "module",
   "engines": { "node": ">=18" },

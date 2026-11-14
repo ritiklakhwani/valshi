@@ -1,15 +1,15 @@
-# Validator League
+# Valshi
 
 A NEAR memecoin whose mechanic is fantasy sports on NEAR's own validator set. You back a real validator with your tokens; every epoch the contract reads that validator's share of total stake straight from the NEAR runtime, and your position grows or shrinks with it. No oracle, no admin, no off-chain input.
 
 Built at NEAR HACKATHON. Track: `memecoins`. Network: NEAR testnet.
 
-**Play in your browser:** https://ritiklakhwani.github.io/validator-league/ - press "Play now" (creates a free testnet account in your browser and claims 1,000 LEAGUE), press "Back" on a validator, then "Cash out" or "tick()". No wallet or install needed. To run it locally instead: `cd web && pnpm install && pnpm dev`.
+**Play in your browser:** https://ritiklakhwani.github.io/valshi/ - press "Play now" (creates a free testnet account in your browser and claims 1,000 VALSHI), press "Back" on a validator, then "Cash out" or "tick()". No wallet or install needed. To run it locally instead: `cd web && pnpm install && pnpm dev`.
 
 ## What it does
 
-1. **Claim.** Any account can claim 1,000 LEAGUE once (attach 0.01 NEAR for storage).
-2. **Back.** Lock some LEAGUE on one active validator (one position per account).
+1. **Claim.** Any account can claim 1,000 VALSHI once (attach 0.01 NEAR for storage).
+2. **Back.** Lock some VALSHI on one active validator (one position per account).
 3. **Score.** Once per epoch (about 12 hours), anyone calls `tick()`. For each backed validator the contract calls the runtime host functions `validator_stake(account)` and `validator_total_stake()` and compares the validator's share of total stake with its share at the last score:
    - share went up: every position on it grows **+2%**
    - share went down: every position on it shrinks **-2%**
@@ -27,20 +27,21 @@ NEAR contracts can read the current validator set and stakes directly (`env::val
 
 | What | Account |
 | --- | --- |
-| Contract | [`validator-league.testnet`](https://testnet.nearblocks.io/address/validator-league.testnet) |
-| Demo players | `league-alice.testnet` (backs `node0`, the largest validator), `league-bob.testnet` (backs `aurora.pool.f863973.m0`), `league-carol.testnet` (backs `kraken.pool.f863973.m0`, the smallest) |
+| Contract | [`valshi.testnet`](https://testnet.nearblocks.io/address/valshi.testnet) |
+| Demo players | `valshi-alice.testnet` (backs `node0`, the largest validator), `valshi-bob.testnet` (backs `aurora.pool.f863973.m0`), `valshi-carol.testnet` (backs `kraken.pool.f863973.m0`, the smallest) |
 | Launch epoch | 5447 |
+| Earlier deployment | `validator-league.testnet` is the same code deployed earlier under the working name "Validator League"; `valshi.testnet` is the submission |
 
 Recorded demo run: [docs/demo-run.txt](docs/demo-run.txt). Selected transactions:
 
 | Step | Result | Transaction |
 | --- | --- | --- |
-| Alice claims 1,000 LEAGUE | `ft_mint` event | [RRZi5Vxq...](https://explorer.testnet.near.org/transactions/RRZi5Vxqui7g3mLWLqrmitqzUX2K9VeVzk8kRZjMKDk) |
-| Alice claims again | refused: "Already claimed" | [9EycQQj4...](https://explorer.testnet.near.org/transactions/9EycQQj4yrhNK9wsq1fxPXRKhKutLhcKrT9RcHWoG3Wg) |
-| Carol backs a non-validator account | refused: "Not an active validator in the current epoch" | [H5geFfL3...](https://explorer.testnet.near.org/transactions/H5geFfL3fmxRyJMkiwvYFve6EjLtphacf6TxJX6jLRSP) |
-| Alice backs `node0` with 500 | `ft_burn` + `back` events | [FNHYQMfW...](https://explorer.testnet.near.org/transactions/FNHYQMfWztfiYoT2oJynuDr4j5KAHW9cArRYzFLpnv7n) |
-| Bob opens a second position | refused: "Already backing a validator, unback first" | [2jL7TA4W...](https://explorer.testnet.near.org/transactions/2jL7TA4WZHCEVnsmWKamZ7CYBv1nz4auHCR1DaszooEX) |
-| `tick` in the launch epoch | no-op, logs "Nothing to score" | [JAzzS89z...](https://explorer.testnet.near.org/transactions/JAzzS89zbAta8DMnRW7vvhcNM5VjciDi288pKQrJP643) |
+| Alice claims 1,000 VALSHI | `ft_mint` event | [5mHekgC2...](https://explorer.testnet.near.org/transactions/5mHekgC22K41k6zdZxbj7spR6idVJ2MHAm3jJw5fpebt) |
+| Alice claims again | refused: "Already claimed" | [HAYfZeDJ...](https://explorer.testnet.near.org/transactions/HAYfZeDJibjs2hc5iamSb2AamPJFaYixUimv8rjWjUDC) |
+| Carol backs a non-validator account | refused: "Not an active validator in the current epoch" | [4uf6pd4a...](https://explorer.testnet.near.org/transactions/4uf6pd4aR7e6MSoUV3JFB7NMgWFLQAGTeBzPMNvgXjw1) |
+| Alice backs `node0` with 500 | `ft_burn` + `back` events | [5JQyFynu...](https://explorer.testnet.near.org/transactions/5JQyFynu8FyqeBdSM9ZYuRzZeXmeBwW7tnZ4CHrgb2b5) |
+| Bob opens a second position | refused: "Already backing a validator, unback first" | [2uK77sY4...](https://explorer.testnet.near.org/transactions/2uK77sY4nvmr58mXw2V5MMWG5yGW4MST96QXn9e22gxF) |
+| `tick` in the launch epoch | no-op, logs "Nothing to score" | [FyNDy6oW...](https://explorer.testnet.near.org/transactions/FyNDy6oW31kvdyiJsUoFJkgaDTB38pobGwX4fZRtiusM) |
 
 ## Try it (do X - see Y)
 
@@ -53,11 +54,11 @@ Requirements: Node 18+ for steps 1 and 3; Rust with the `wasm32-unknown-unknown`
 3. **Run the 60-day simulation:** `node sim/simulate.mjs` (`--live` refetches the current validator set).
    You see median ending value per player for six parameter sets and four strategies, starting from the real stakes of the 27 testnet validators. Row D is the launch configuration.
 4. **Read a live validator share from the contract, no keys:**
-   `near contract call-function as-read-only validator-league.testnet get_live_share json-args '{"validator_id":"node0"}' network-config testnet now`
+   `near contract call-function as-read-only valshi.testnet get_live_share json-args '{"validator_id":"node0"}' network-config testnet now`
    You see `stake`, `total_stake`, `share` (parts per 1e12) and `epoch`, as the runtime reports them inside the contract.
 5. **Play with your own testnet account** (create one with `near account create-account sponsor-by-faucet-service <you>.testnet autogenerate-new-keypair save-to-keychain network-config testnet create`):
    ```sh
-   C=validator-league.testnet; ME=<you>.testnet
+   C=valshi.testnet; ME=<you>.testnet
    near contract call-function as-transaction $C claim json-args '{}' prepaid-gas '100 Tgas' attached-deposit '0.01 NEAR' sign-as $ME network-config testnet sign-with-keychain send
    near contract call-function as-transaction $C back json-args '{"validator_id":"node1","amount":"100000000000000000000"}' prepaid-gas '100 Tgas' attached-deposit '0.005 NEAR' sign-as $ME network-config testnet sign-with-keychain send
    near contract call-function as-transaction $C tick json-args '{}' prepaid-gas '100 Tgas' attached-deposit '0 NEAR' sign-as $ME network-config testnet sign-with-keychain send
@@ -72,7 +73,7 @@ Requirements: Node 18+ for steps 1 and 3; Rust with the `wasm32-unknown-unknown`
 
 `web/` is a static page (Vite, near-api-js 7.5.3, no backend) built into `docs/play/` and served by GitHub Pages.
 
-- League table: every active testnet validator with its live stake share (RPC `validators`), the "next matchday" projection from the published next-epoch validator set (Rising / Slipping / Leaving set), LEAGUE backing and win/loss/kick record from the contract.
+- League table: every active testnet validator with its live stake share (RPC `validators`), the "next matchday" projection from the published next-epoch validator set (Rising / Slipping / Leaving set), VALSHI backing and win/loss/kick record from the contract.
 - Player: "Play now" generates an ed25519 key in the browser, asks the public testnet faucet (`https://helper.nearprotocol.com/account`, the same one near-cli-rs uses) to create the account, and claims the starter pack. The key stays in the browser's local storage; this is a testnet convenience and would be replaced by a wallet connection on mainnet.
 - Actions: Back (with an outcome preview for rising / slipping / dropped), Cash out, and tick(). Every action is a real transaction; the match feed links each one to the explorer.
 
@@ -106,9 +107,9 @@ Events (NEP-297, standard `validator_league`, version `1.0.0`): `back`, `unback`
 
 | Parameter | Value | Hard bound in code |
 | --- | --- | --- |
-| `claim_amount` | 1,000 LEAGUE | > 0 |
+| `claim_amount` | 1,000 VALSHI | > 0 |
 | `max_claims` | 1,000,000 accounts | > 0 |
-| `min_back` | 1 LEAGUE | > 0 |
+| `min_back` | 1 VALSHI | > 0 |
 | `win_bps` | 200 (+2%) | <= 1000 |
 | `lose_bps` | 200 (-2%) | <= 1000 |
 | `kick_bps` | 3000 (-30%) | <= 9000 |
@@ -133,7 +134,7 @@ There is no method that changes any of these after `new`, and no owner role. The
 
 ## Hackathon window, AI disclosure and libraries
 
-- Repository created 2026-11-14 UTC (inside the code window that opened 2026-10-19). Baseline: tag `pre-hackathon` (license and readme stub only). Submission: tag `hackathon-submission`. Everything between the two tags was written during the hackathon. Full diff: https://github.com/ritiklakhwani/validator-league/compare/pre-hackathon...hackathon-submission
+- Repository created 2026-11-14 UTC (inside the code window that opened 2026-10-19). Baseline: tag `pre-hackathon` (license and readme stub only). Submission: tag `hackathon-submission`. Everything between the two tags was written during the hackathon. Full diff: https://github.com/ritiklakhwani/valshi/compare/pre-hackathon...hackathon-submission
 - All code was written with AI coding assistance (Claude Code, Anthropic) under Ritik Lakhwani's direction and review.
 - Libraries and tools: `near-sdk` 5.30.2, `near-contract-standards` 5.30.2, `cargo-near` 0.23.0, `near-cli-rs` 0.31.1; web app: `near-api-js` 7.5.3, `vite` 8.3.8, Google Fonts (Archivo, JetBrains Mono). The scripts use only Node built-ins. No templates.
 - This is the author's only NEAR HACKATHON project.

@@ -1,4 +1,4 @@
-// 60-day simulation of the Validator League scoring rule.
+// 60-day simulation of the Valshi scoring rule.
 //
 // Usage:
 //   node sim/simulate.mjs            # uses the committed snapshot of real testnet validators
@@ -145,7 +145,7 @@ function median(xs) {
 }
 
 const validators = await loadValidators();
-console.log(`Validator League simulation: ${validators.length} real testnet validators, ${EPOCHS} epochs (60 days), ${RUNS} runs per parameter set`);
+console.log(`Valshi simulation: ${validators.length} real testnet validators, ${EPOCHS} epochs (60 days), ${RUNS} runs per parameter set`);
 console.log(`Model: stake noise ${STAKE_SIGMA * 100}%/epoch, reward growth ${REWARD_GROWTH * 100}%/epoch, kick chance ${KICK_PROB * 100}%/epoch`);
 console.log(`Each player starts with ${CLAIM} tokens. Numbers are the median ending value per player.\n`);
 
